@@ -45,13 +45,16 @@ def price_dist_graph():
     plt.show()
 
 
-def loss(p, m, r, d, weights):
-    if p != 0.0 and m != 0.0 and r != 0.0:
-        return (p * weights[0] / (m * weights[1])) + (d * weights[2] /  (r * weights[3]))
+def loss(p, weights, dist=True):
+    if p[0] != 0.0 and p[1] != 0.0 and p[2] != 0.0:
+        if dist:
+            return (p[0] * weights[0] / (p[1] * weights[1])) + (p[3] * weights[2] /  (p[2] * weights[3]))
+        else:
+            return (p[0] * weights[0] / (p[1] * weights[1] /  p[2] * weights[3]))
     return 10.0
 
 limit_price = 4000
-limit_rooms = 3.0
+limit_rooms = 0.0
 
 lst_prices = []
 lst_meters = []
@@ -74,16 +77,18 @@ max_room = max(lst_rooms)
 max_distance = max(lst_distances)
 
 # price, meters, rooms, distance
-weights = [0.4, 0.7, 0.9, 0.4]
+# weights = [0.4, 0.7, 0.9, 0.4]
+weights = [1, 1, 1, 1]
 
 scores = []
 for i in range(len(targets)):
-    p = float(lst_prices[i]) / float(max_price)
-    m = float(lst_meters[i]) / float(max_meter)
-    r = float(lst_rooms[i]) / float(max_room)
-    d = float(lst_distances[i]) / float(max_distance)
+    params = []
+    params.append(float(lst_prices[i]) / float(max_price))
+    params.append(float(lst_meters[i]) / float(max_meter))
+    params.append(float(lst_rooms[i]) / float(max_room))
+    params.append(float(lst_distances[i]) / float(max_distance))
 
-    score = loss(p, m, r, d, weights)
+    score = loss(params, weights, dist=False)
     scores.append(score)
 
 np_scores = array(scores)
@@ -93,3 +98,5 @@ sorted_scores = np_scores[sorted_indices]
 for i in range(10):
     best_apartment = targets[sorted_indices[i]]
     print("Score:", round(sorted_scores[i], 2), best_apartment[0][0], best_apartment[1][0], best_apartment[2][0], best_apartment[3][0], best_apartment[4][0])
+
+print("Average price:", int(sum(lst_prices) / len(lst_prices)))
